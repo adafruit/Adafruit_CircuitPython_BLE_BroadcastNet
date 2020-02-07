@@ -43,12 +43,26 @@ Implementation Notes
 * Adafruit's BLE library: https://github.com/adafruit/Adafruit_CircuitPython_BLE
 """
 
+import adafruit_ble
 from adafruit_ble.advertising import Advertisement, LazyObjectField
 from adafruit_ble.advertising.standard import ManufacturerData, ManufacturerDataField
 import struct
+import time
 
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_BLE_BroadcastNet.git"
+
+_ble = adafruit_ble.BLERadio()
+_sequence_number = 0
+def broadcast(measurement, *, broadcast_time=0.1):
+    global _sequence_number
+    measurement.sequence_number = _sequence_number
+    _ble.start_advertising(measurement, scan_response=None)
+    time.sleep(broadcast_time)
+    _ble.stop_advertising()
+    _sequence_number = (_sequence_number + 1) % 256
+
+device_address = "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(*_ble._adapter.address.address_bytes)
 
 _MANUFACTURING_DATA_ADT = const(0xff)
 _ADAFRUIT_COMPANY_ID = const(0x0822)
@@ -71,16 +85,16 @@ class AdafruitSensorMeasurement(Advertisement):
     sequence_number = ManufacturerDataField(0x0003, "<B")
     """Sequence number of the measurement. Used to detect missed packets."""
 
-    acceleration = ManufacturerDataField(0x0a00, "<fff")
+    acceleration = ManufacturerDataField(0x0a00, "<fff", ("x", "y", "z"))
     """Acceleration as (x, y, z) tuple of floats in meters per second per second."""
 
-    magnetic = ManufacturerDataField(0x0a01, "<fff")
+    magnetic = ManufacturerDataField(0x0a01, "<fff", ("x", "y", "z"))
     """Magnetism as (x, y, z) tuple of floats in micro-Tesla."""
 
-    orientation = ManufacturerDataField(0x0a02, "<fff")
+    orientation = ManufacturerDataField(0x0a02, "<fff", ("x", "y", "z"))
     """Absolution orientation as (x, y, z) tuple of floats in degrees."""
 
-    gyro = ManufacturerDataField(0x0a03, "<fff")
+    gyro = ManufacturerDataField(0x0a03, "<fff", ("x", "y", "z"))
     """Gyro motion as (x, y, z) tuple of floats in radians per second."""
 
     temperature = ManufacturerDataField(0x0a04, "<f")

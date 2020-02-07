@@ -6,51 +6,9 @@ import adafruit_dotstar
 from adafruit_esp32spi import adafruit_esp32spi
 from adafruit_esp32spi import adafruit_esp32spi_wifimanager
 from secrets import secrets
-from adafruit_ble import BLERadio
-
-from adafruit_ble.advertising import Advertisement, LazyObjectField
-from adafruit_ble.advertising.standard import ManufacturerData, ManufacturerDataField
-import struct
-import collections
-
-_MANUFACTURING_DATA_ADT = const(0xff)
-_ADAFRUIT_COMPANY_ID = const(0x0822)
-_SENSOR_DATA_ID = const(0x0002)
-
-class AdafruitSensorMeasurement(Advertisement):
-    """Broadcast a single RGB color."""
-    # This prefix matches all
-    prefix = struct.pack("<BBH",
-                         3,
-                         _MANUFACTURING_DATA_ADT,
-                         _ADAFRUIT_COMPANY_ID)
-
-    manufacturer_data = LazyObjectField(ManufacturerData,
-                                        "manufacturer_data",
-                                        advertising_data_type=_MANUFACTURING_DATA_ADT,
-                                        company_id=_ADAFRUIT_COMPANY_ID,
-                                        key_encoding="<H")
-
-    sequence_number = ManufacturerDataField(0x0003, "<B")
-    """Color to broadcast as RGB integer."""
-
-    temperature = ManufacturerDataField(0x0a00, "<f")
-    """Color to broadcast as RGB integer."""
-
-    def __init__(self, *, sensor_device_id=0xff, sequence_number=0xff):
-        super().__init__()
-        # self.sensor_device_id = sensor_device_id
-        # self.sequence_number = sequence_number
-
-    def __str__(self):
-        parts = []
-        for attr in dir(self.__class__):
-            attribute_instance = getattr(self.__class__, attr)
-            if issubclass(attribute_instance.__class__, ManufacturerDataField):
-                value = getattr(self, attr)
-                if value is not None:
-                    parts.append("{}={}".format(attr, str(value)))
-        return "<{} {} >".format(self.__class__.__name__, " ".join(parts))
+from adafruit_ble.advertising.standard import ManufacturerDataField
+import adafruit_ble
+import adafruit_ble_broadcastnet
 
 esp32_cs = DigitalInOut(board.D13)
 esp32_ready = DigitalInOut(board.D11)
@@ -84,6 +42,8 @@ def create_group(name):
 def create_feed(group_key, name):
     response = aio_post("/groups/{}/feeds".format(group_key), json={"feed": {"name": name}})
     if response.status_code != 201:
+        print(name)
+        print(response.content)
         print(response.status_code)
         raise RuntimeError("unable to create new feed")
     return response.json()["key"]
@@ -99,20 +59,22 @@ def create_data(group_key, data):
         raise RuntimeError("unable to create new data")
     response.close()
 
-def convert_to_feed_data(values, attribute_name):
+def convert_to_feed_data(values, attribute_name, attribute_instance):
     feed_data = []
-    if not isinstance(values, tuple) or hasattr(values, "_fields"):
+    # Wrap single value entries for enumeration.
+    if (not isinstance(values, tuple) or
+        (attribute_instance.element_count > 1 and not isinstance(values[0], tuple))):
         values = (values, )
     for i, value in enumerate(values):
-        key = attribute_name + str(i)
+        key = attribute_name.replace("_", "-") + "-" + str(i)
         if isinstance(value, tuple):
-            for field in value._fields:
-                feed_data.append({"key": key + field, "value": getattr(value, field)})
+            for j in range(attribute_instance.element_count):
+                feed_data.append({"key": key + "-" + attribute_instance.field_names[j], "value": value[j]})
         else:
             feed_data.append({"key": key, "value": value})
     return feed_data
 
-ble = BLERadio()
+ble = adafruit_ble.BLERadio()
 address = ble._adapter.address
 bridge_address = "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(*address.address_bytes)
 print("This is BroadcastNet bridge:", bridge_address)
@@ -132,17 +94,17 @@ for group in response.json():
 
 print(existing_feeds)
 
-counter = 0
-
-ble = BLERadio()
 print("scanning")
 sequence_numbers = {}
 # By providing Advertisement as well we include everything, not just specific advertisements.
-for measurement in ble.start_scan(AdafruitSensorMeasurement):
+for measurement in ble.start_scan(adafruit_ble_broadcastnet.AdafruitSensorMeasurement):
     sensor_address = "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(*measurement.address.address_bytes)
-    print(sensor_address, measurement)
     if sensor_address not in sequence_numbers:
         sequence_numbers[sensor_address] = measurement.sequence_number - 1 % 256
+    # Skip if we are getting the same broadcast more than once.
+    if measurement.sequence_number == sequence_numbers[sensor_address]:
+        continue
+    print(sensor_address, measurement)
     number_missed = measurement.sequence_number - sequence_numbers[sensor_address] - 1
     if number_missed < 0:
         number_missed += 256
@@ -161,8 +123,8 @@ for measurement in ble.start_scan(AdafruitSensorMeasurement):
         if issubclass(attribute_instance.__class__, ManufacturerDataField):
             if attribute != "sequence_number":
                 values = getattr(measurement, attribute)
-
-                data.extend(convert_to_feed_data(values, attribute))
+                if values is not None:
+                    data.extend(convert_to_feed_data(values, attribute, attribute_instance))
 
     for feed_data in data:
         if feed_data["key"] not in existing_feeds[sensor_address]:
@@ -177,3 +139,22 @@ for measurement in ble.start_scan(AdafruitSensorMeasurement):
     print()
 
 print("scan done")
+
+# while True:
+#     try:
+#         print("Posting data...", end='')
+#         data = counter
+#         response = aio_post("/feeds/test/data", json={'value':data})
+#         if response.status_code == 404:
+#             response = aio_post("/feeds", json={'feed': {"name": "test"}})
+#             print("error", response.status_code)
+#             print(dir(response), response.socket)
+#         json = response.json()
+#         counter = counter + 1
+#         print("OK")
+#     except (ValueError, RuntimeError) as e:
+#         print("Failed to get data, retrying\n", e)
+#         wifi.reset()
+#         continue
+#     response = None
+#     time.sleep(15)
