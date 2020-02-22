@@ -46,6 +46,7 @@ Implementation Notes
 import adafruit_ble
 from adafruit_ble.advertising import Advertisement, LazyObjectField
 from adafruit_ble.advertising.standard import ManufacturerData, ManufacturerDataField
+from micropython import const
 import struct
 import time
 
