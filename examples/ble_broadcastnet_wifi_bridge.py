@@ -95,7 +95,10 @@ response = aio_get("/groups")
 for group in response.json():
     if "-" not in group["key"]:
         continue
-    _, bridge, _, sensor_address = group["key"].split("-")
+    pieces = group["key"].split("-")
+    if len(pieces) != 4 or pieces[0] != "bridge" or pieces[2] != "sensor":
+        continue
+    _, bridge, _, sensor_address = pieces
     if bridge != bridge_address:
         continue
     existing_feeds[sensor_address] = []
