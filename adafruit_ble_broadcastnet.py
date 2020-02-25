@@ -55,19 +55,21 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_BLE_BroadcastNet.
 
 _ble = adafruit_ble.BLERadio()
 _sequence_number = 0
-def broadcast(measurement, *, broadcast_time=0.1):
+def broadcast(measurement, *, broadcast_time=0.1, extended=False):
+    """Broadcasts the given measurement for the given broadcast time. If extended is False and the
+       measurement would be too long, it will be split into multiple measurements for transmission."""
     global _sequence_number
-    measurement.sequence_number = _sequence_number
-    _ble.start_advertising(measurement, scan_response=None)
-    time.sleep(broadcast_time)
-    _ble.stop_advertising()
-    _sequence_number = (_sequence_number + 1) % 256
+    for submeasurement in measurement.split(252 if extended else 31):
+        submeasurement.sequence_number = _sequence_number
+        _ble.start_advertising(submeasurement, scan_response=None)
+        time.sleep(broadcast_time)
+        _ble.stop_advertising()
+        _sequence_number = (_sequence_number + 1) % 256
 
 device_address = "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(*_ble._adapter.address.address_bytes)
 
 _MANUFACTURING_DATA_ADT = const(0xff)
 _ADAFRUIT_COMPANY_ID = const(0x0822)
-_SENSOR_DATA_ID = const(0x0002)
 
 class AdafruitSensorMeasurement(Advertisement):
     """Broadcast a single RGB color."""
@@ -167,3 +169,27 @@ class AdafruitSensorMeasurement(Advertisement):
                 if value is not None:
                     parts.append("{}={}".format(attr, str(value)))
         return "<{} {} >".format(self.__class__.__name__, " ".join(parts))
+
+    def split(self, max_packet_size=31):
+        current_size = 8 # baseline for mfg data and sequence number
+        if current_size + len(self.manufacturer_data) < max_packet_size:
+            yield self
+            return
+
+        original_data = self.manufacturer_data.data
+        submeasurement = None
+        for key in original_data:
+            value = original_data[key]
+            entry_size = 2 + len(value)
+            if not submeasurement or current_size + entry_size > max_packet_size:
+                if submeasurement:
+                    yield submeasurement
+                submeasurement = self.__class__()
+                current_size = 8
+            submeasurement.manufacturer_data.data[key] = value
+            current_size += entry_size
+
+        if submeasurement:
+            yield submeasurement
+
+        return
