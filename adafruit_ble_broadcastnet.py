@@ -149,6 +149,10 @@ class AdafruitSensorMeasurement(Advertisement):
     weight = ManufacturerDataField(0x0a14, "<f")
     """Weight as a float in grams."""
 
+    battery_voltage = ManufacturerDataField(0x0a15, "<H")
+    """Battery voltage in millivolts. Saves two bytes over voltage and is more readable in bare
+       packets."""
+
     def __init__(self, *, sequence_number=None):
         super().__init__()
         if sequence_number:
