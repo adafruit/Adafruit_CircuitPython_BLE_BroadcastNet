@@ -27,40 +27,27 @@ Basic IOT over BLE advertisements.
 
 
 * Author(s): Scott Shawcroft
-
-Implementation Notes
---------------------
-
-**Hardware:**
-
-.. todo:: Add links to any specific hardware product page(s), or category page(s). Use unordered list & hyperlink rST
-   inline format: "* `Link Text <url>`_"
-
-**Software and Dependencies:**
-
-* Adafruit CircuitPython firmware for the supported boards:
-  https://github.com/adafruit/circuitpython/releases
-* Adafruit's BLE library: https://github.com/adafruit/Adafruit_CircuitPython_BLE
 """
 
+import struct
+import time
 import adafruit_ble
 from adafruit_ble.advertising import Advertisement, LazyObjectField
 from adafruit_ble.advertising.standard import ManufacturerData, ManufacturerDataField
 from micropython import const
-import struct
-import time
 
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_BLE_BroadcastNet.git"
 
-_ble = adafruit_ble.BLERadio()
-_sequence_number = 0
+_ble = adafruit_ble.BLERadio()  # pylint: disable=invalid-name
+_sequence_number = 0  # pylint: disable=invalid-name
 
 
 def broadcast(measurement, *, broadcast_time=0.1, extended=False):
     """Broadcasts the given measurement for the given broadcast time. If extended is False and the
-       measurement would be too long, it will be split into multiple measurements for transmission."""
-    global _sequence_number
+       measurement would be too long, it will be split into multiple measurements for transmission.
+       """
+    global _sequence_number  # pylint: disable=global-statement,invalid-name
     for submeasurement in measurement.split(252 if extended else 31):
         submeasurement.sequence_number = _sequence_number
         _ble.start_advertising(submeasurement, scan_response=None)
@@ -69,9 +56,12 @@ def broadcast(measurement, *, broadcast_time=0.1, extended=False):
         _sequence_number = (_sequence_number + 1) % 256
 
 
-device_address = "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(
-    *_ble._adapter.address.address_bytes
+device_address = "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(  # pylint: disable=invalid-name
+    *reversed(
+        list(_ble._adapter.address.address_bytes)
+    )  # pylint: disable=protected-access
 )
+"""Device address as a string."""
 
 _MANUFACTURING_DATA_ADT = const(0xFF)
 _ADAFRUIT_COMPANY_ID = const(0x0822)
@@ -140,10 +130,10 @@ class AdafruitSensorMeasurement(Advertisement):
     """Color as RGB integer."""
 
     # alarm = ManufacturerDataField(0x0a0f, "<f")
-    """Alarm as a start date and time and recurrence period. Not supported."""
+    # """Alarm as a start date and time and recurrence period. Not supported."""
 
     # datetime = ManufacturerDataField(0x0a10, "<f")
-    """Date and time as a struct. Not supported."""
+    # """Date and time as a struct. Not supported."""
 
     duty_cycle = ManufacturerDataField(0x0A11, "<f")
     """16-bit PWM duty cycle. Independent of frequency."""
@@ -177,6 +167,8 @@ class AdafruitSensorMeasurement(Advertisement):
         return "<{} {} >".format(self.__class__.__name__, " ".join(parts))
 
     def split(self, max_packet_size=31):
+        """Split the measurement into multiple measurements with the given max_packet_size. Yields
+           each submeasurement."""
         current_size = 8  # baseline for mfg data and sequence number
         if current_size + len(self.manufacturer_data) < max_packet_size:
             yield self

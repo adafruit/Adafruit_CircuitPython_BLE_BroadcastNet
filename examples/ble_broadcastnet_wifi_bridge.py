@@ -102,9 +102,7 @@ def convert_to_feed_data(values, attribute_name, attribute_instance):
 
 
 ble = adafruit_ble.BLERadio()
-address = ble._adapter.address
-bridge_address = "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(*address.address_bytes)
-print("This is BroadcastNet bridge:", bridge_address)
+print("This is BroadcastNet bridge:", adafruit_ble_broadcastnet.device_address)
 print()
 
 print("Fetching existing feeds.")
