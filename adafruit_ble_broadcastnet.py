@@ -55,6 +55,8 @@ __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_BLE_BroadcastNet.
 
 _ble = adafruit_ble.BLERadio()
 _sequence_number = 0
+
+
 def broadcast(measurement, *, broadcast_time=0.1, extended=False):
     """Broadcasts the given measurement for the given broadcast time. If extended is False and the
        measurement would be too long, it will be split into multiple measurements for transmission."""
@@ -66,71 +68,75 @@ def broadcast(measurement, *, broadcast_time=0.1, extended=False):
         _ble.stop_advertising()
         _sequence_number = (_sequence_number + 1) % 256
 
-device_address = "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(*_ble._adapter.address.address_bytes)
 
-_MANUFACTURING_DATA_ADT = const(0xff)
+device_address = "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(
+    *_ble._adapter.address.address_bytes
+)
+
+_MANUFACTURING_DATA_ADT = const(0xFF)
 _ADAFRUIT_COMPANY_ID = const(0x0822)
+
 
 class AdafruitSensorMeasurement(Advertisement):
     """Broadcast a single RGB color."""
-    # This prefix matches all
-    prefix = struct.pack("<BBH",
-                         3,
-                         _MANUFACTURING_DATA_ADT,
-                         _ADAFRUIT_COMPANY_ID)
 
-    manufacturer_data = LazyObjectField(ManufacturerData,
-                                        "manufacturer_data",
-                                        advertising_data_type=_MANUFACTURING_DATA_ADT,
-                                        company_id=_ADAFRUIT_COMPANY_ID,
-                                        key_encoding="<H")
+    # This prefix matches all
+    prefix = struct.pack("<BBH", 3, _MANUFACTURING_DATA_ADT, _ADAFRUIT_COMPANY_ID)
+
+    manufacturer_data = LazyObjectField(
+        ManufacturerData,
+        "manufacturer_data",
+        advertising_data_type=_MANUFACTURING_DATA_ADT,
+        company_id=_ADAFRUIT_COMPANY_ID,
+        key_encoding="<H",
+    )
 
     sequence_number = ManufacturerDataField(0x0003, "<B")
     """Sequence number of the measurement. Used to detect missed packets."""
 
-    acceleration = ManufacturerDataField(0x0a00, "<fff", ("x", "y", "z"))
+    acceleration = ManufacturerDataField(0x0A00, "<fff", ("x", "y", "z"))
     """Acceleration as (x, y, z) tuple of floats in meters per second per second."""
 
-    magnetic = ManufacturerDataField(0x0a01, "<fff", ("x", "y", "z"))
+    magnetic = ManufacturerDataField(0x0A01, "<fff", ("x", "y", "z"))
     """Magnetism as (x, y, z) tuple of floats in micro-Tesla."""
 
-    orientation = ManufacturerDataField(0x0a02, "<fff", ("x", "y", "z"))
+    orientation = ManufacturerDataField(0x0A02, "<fff", ("x", "y", "z"))
     """Absolution orientation as (x, y, z) tuple of floats in degrees."""
 
-    gyro = ManufacturerDataField(0x0a03, "<fff", ("x", "y", "z"))
+    gyro = ManufacturerDataField(0x0A03, "<fff", ("x", "y", "z"))
     """Gyro motion as (x, y, z) tuple of floats in radians per second."""
 
-    temperature = ManufacturerDataField(0x0a04, "<f")
+    temperature = ManufacturerDataField(0x0A04, "<f")
     """Temperature as a float in degrees centigrade."""
 
-    eCO2 = ManufacturerDataField(0x0a05, "<f")
+    eCO2 = ManufacturerDataField(0x0A05, "<f")
     """Equivalent CO2 as a float in parts per million."""
 
-    TVOC = ManufacturerDataField(0x0a06, "<f")
+    TVOC = ManufacturerDataField(0x0A06, "<f")
     """Total Volatile Organic Compounds as a float in parts per billion."""
 
-    distance = ManufacturerDataField(0x0a07, "<f")
+    distance = ManufacturerDataField(0x0A07, "<f")
     """Distance as a float in centimeters."""
 
-    light = ManufacturerDataField(0x0a08, "<f")
+    light = ManufacturerDataField(0x0A08, "<f")
     """Brightness as a float without units."""
 
-    lux = ManufacturerDataField(0x0a09, "<f")
+    lux = ManufacturerDataField(0x0A09, "<f")
     """Brightness as a float in SI lux."""
 
-    pressure = ManufacturerDataField(0x0a0a, "<f")
+    pressure = ManufacturerDataField(0x0A0A, "<f")
     """Pressure as a float in hectopascals."""
 
-    relative_humidity = ManufacturerDataField(0x0a0b, "<f")
+    relative_humidity = ManufacturerDataField(0x0A0B, "<f")
     """Relative humidity as a float percentage."""
 
-    current = ManufacturerDataField(0x0a0c, "<f")
+    current = ManufacturerDataField(0x0A0C, "<f")
     """Current as a float in milliamps."""
 
-    voltage = ManufacturerDataField(0x0a0d, "<f")
+    voltage = ManufacturerDataField(0x0A0D, "<f")
     """Voltage as a float in Volts."""
 
-    color = ManufacturerDataField(0x0a0e, "<f")
+    color = ManufacturerDataField(0x0A0E, "<f")
     """Color as RGB integer."""
 
     # alarm = ManufacturerDataField(0x0a0f, "<f")
@@ -139,19 +145,19 @@ class AdafruitSensorMeasurement(Advertisement):
     # datetime = ManufacturerDataField(0x0a10, "<f")
     """Date and time as a struct. Not supported."""
 
-    duty_cycle = ManufacturerDataField(0x0a11, "<f")
+    duty_cycle = ManufacturerDataField(0x0A11, "<f")
     """16-bit PWM duty cycle. Independent of frequency."""
 
-    frequency = ManufacturerDataField(0x0a12, "<f")
+    frequency = ManufacturerDataField(0x0A12, "<f")
     """As integer Hertz"""
 
-    value = ManufacturerDataField(0x0a13, "<f")
+    value = ManufacturerDataField(0x0A13, "<f")
     """16-bit unit-less value. Used for analog values and for booleans."""
 
-    weight = ManufacturerDataField(0x0a14, "<f")
+    weight = ManufacturerDataField(0x0A14, "<f")
     """Weight as a float in grams."""
 
-    battery_voltage = ManufacturerDataField(0x0a15, "<H")
+    battery_voltage = ManufacturerDataField(0x0A15, "<H")
     """Battery voltage in millivolts. Saves two bytes over voltage and is more readable in bare
        packets."""
 
@@ -171,7 +177,7 @@ class AdafruitSensorMeasurement(Advertisement):
         return "<{} {} >".format(self.__class__.__name__, " ".join(parts))
 
     def split(self, max_packet_size=31):
-        current_size = 8 # baseline for mfg data and sequence number
+        current_size = 8  # baseline for mfg data and sequence number
         if current_size + len(self.manufacturer_data) < max_packet_size:
             yield self
             return

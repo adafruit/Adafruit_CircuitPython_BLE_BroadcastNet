@@ -13,7 +13,7 @@ while True:
     # add sound level
     measurement.light = cp.light
     measurement.value = cp.switch
-    #measurement.acceleration = cp.acceleration
+    # measurement.acceleration = cp.acceleration
 
     print(measurement)
     adafruit_ble_broadcastnet.broadcast(measurement)

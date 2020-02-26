@@ -24,18 +24,26 @@ else:
     esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
     # esp._debug = 1
 
-    status_light = adafruit_dotstar.DotStar(board.APA102_SCK, board.APA102_MOSI, 1, brightness=0.2)
-    requests = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(esp, secrets, status_light)
+    status_light = adafruit_dotstar.DotStar(
+        board.APA102_SCK, board.APA102_MOSI, 1, brightness=0.2
+    )
+    requests = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(
+        esp, secrets, status_light
+    )
 
-aio_auth_header = {"X-AIO-KEY":secrets['aio_key']}
-aio_base_url = "https://io.adafruit.com/api/v2/"+secrets['aio_username']
+aio_auth_header = {"X-AIO-KEY": secrets["aio_key"]}
+aio_base_url = "https://io.adafruit.com/api/v2/" + secrets["aio_username"]
+
+
 def aio_post(path, **kwargs):
     kwargs["headers"] = aio_auth_header
     return requests.post(aio_base_url + path, **kwargs)
 
+
 def aio_get(path, **kwargs):
     kwargs["headers"] = aio_auth_header
     return requests.get(aio_base_url + path, **kwargs)
+
 
 def create_group(name):
     response = aio_post("/groups", json={"name": name})
@@ -46,8 +54,11 @@ def create_group(name):
         raise RuntimeError("unable to create new group")
     return response.json()["key"]
 
+
 def create_feed(group_key, name):
-    response = aio_post("/groups/{}/feeds".format(group_key), json={"feed": {"name": name}})
+    response = aio_post(
+        "/groups/{}/feeds".format(group_key), json={"feed": {"name": name}}
+    )
     if response.status_code != 201:
         print(name)
         print(response.content)
@@ -67,20 +78,28 @@ def create_data(group_key, data):
     response.close()
     return True
 
+
 def convert_to_feed_data(values, attribute_name, attribute_instance):
     feed_data = []
     # Wrap single value entries for enumeration.
-    if (not isinstance(values, tuple) or
-        (attribute_instance.element_count > 1 and not isinstance(values[0], tuple))):
-        values = (values, )
+    if not isinstance(values, tuple) or (
+        attribute_instance.element_count > 1 and not isinstance(values[0], tuple)
+    ):
+        values = (values,)
     for i, value in enumerate(values):
         key = attribute_name.replace("_", "-") + "-" + str(i)
         if isinstance(value, tuple):
             for j in range(attribute_instance.element_count):
-                feed_data.append({"key": key + "-" + attribute_instance.field_names[j], "value": value[j]})
+                feed_data.append(
+                    {
+                        "key": key + "-" + attribute_instance.field_names[j],
+                        "value": value[j],
+                    }
+                )
         else:
             feed_data.append({"key": key, "value": value})
     return feed_data
+
 
 ble = adafruit_ble.BLERadio()
 address = ble._adapter.address
@@ -112,7 +131,9 @@ print("scanning")
 print()
 sequence_numbers = {}
 # By providing Advertisement as well we include everything, not just specific advertisements.
-for measurement in ble.start_scan(adafruit_ble_broadcastnet.AdafruitSensorMeasurement, interval=0.5):
+for measurement in ble.start_scan(
+    adafruit_ble_broadcastnet.AdafruitSensorMeasurement, interval=0.5
+):
     reversed_address = [measurement.address.address_bytes[i] for i in range(5, -1, -1)]
     sensor_address = "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(*reversed_address)
     if sensor_address not in sequence_numbers:
@@ -137,7 +158,9 @@ for measurement in ble.start_scan(adafruit_ble_broadcastnet.AdafruitSensorMeasur
             if attribute != "sequence_number":
                 values = getattr(measurement, attribute)
                 if values is not None:
-                    data.extend(convert_to_feed_data(values, attribute, attribute_instance))
+                    data.extend(
+                        convert_to_feed_data(values, attribute, attribute_instance)
+                    )
 
     for feed_data in data:
         if feed_data["key"] not in existing_feeds[sensor_address]:
@@ -150,10 +173,8 @@ for measurement in ble.start_scan(adafruit_ble_broadcastnet.AdafruitSensorMeasur
     if create_data(group_key, data):
         sequence_numbers[sensor_address] = measurement.sequence_number
 
-
     duration = time.monotonic() - start_time
     print("Done logging measurement to IO. Took {} seconds".format(duration))
     print()
 
 print("scan done")
-

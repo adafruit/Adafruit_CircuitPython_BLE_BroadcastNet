@@ -30,7 +30,9 @@ while True:
     exp = int(math.log(consecutive, 2))
     if 2 ** exp == consecutive:
         measurement = adafruit_ble_broadcastnet.AdafruitSensorMeasurement()
-        battery_voltage = battery.value / 2**16 * divider_ratio * battery.reference_voltage
+        battery_voltage = (
+            battery.value / 2 ** 16 * divider_ratio * battery.reference_voltage
+        )
         measurement.battery_voltage = int(battery_voltage * 1000)
         measurement.temperature = temp
         print(measurement)
