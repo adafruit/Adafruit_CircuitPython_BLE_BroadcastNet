@@ -3,12 +3,12 @@
    report. When doing a report it will actually do multiple broadcasts and wait 2 ** n readings
    until the next broadcast. The delay is reset every time the temp moves more than 1 degree."""
 
-import adafruit_ble_broadcastnet
+import math
+import time
 import analogio
 import board
-import math
 import microcontroller
-import time
+import adafruit_ble_broadcastnet
 
 print("This is BroadcastNet sensor:", adafruit_ble_broadcastnet.device_address)
 
@@ -18,7 +18,7 @@ divider_ratio = 2
 last_temperature = None
 consecutive = 1
 while True:
-    temp = microcontroller.cpu.temperature
+    temp = microcontroller.cpu.temperature  # pylint: disable=no-member
     if not last_temperature or abs(temp - last_temperature) > 1:
         consecutive = 1
         last_temperature = temp
@@ -31,7 +31,10 @@ while True:
     if 2 ** exp == consecutive:
         measurement = adafruit_ble_broadcastnet.AdafruitSensorMeasurement()
         battery_voltage = (
-            battery.value / 2 ** 16 * divider_ratio * battery.reference_voltage
+            battery.value
+            / 2 ** 16
+            * divider_ratio
+            * battery.reference_voltage  # pylint: disable=no-member
         )
         measurement.battery_voltage = int(battery_voltage * 1000)
         measurement.temperature = temp

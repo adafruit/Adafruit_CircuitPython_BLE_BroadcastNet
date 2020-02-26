@@ -31,10 +31,10 @@ Basic IOT over BLE advertisements.
 
 import struct
 import time
+from micropython import const
 import adafruit_ble
 from adafruit_ble.advertising import Advertisement, LazyObjectField
 from adafruit_ble.advertising.standard import ManufacturerData, ManufacturerDataField
-from micropython import const
 
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_BLE_BroadcastNet.git"
@@ -58,8 +58,8 @@ def broadcast(measurement, *, broadcast_time=0.1, extended=False):
 
 device_address = "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(  # pylint: disable=invalid-name
     *reversed(
-        list(_ble._adapter.address.address_bytes)
-    )  # pylint: disable=protected-access
+        list(_ble._adapter.address.address_bytes)  # pylint: disable=protected-access
+    )
 )
 """Device address as a string."""
 

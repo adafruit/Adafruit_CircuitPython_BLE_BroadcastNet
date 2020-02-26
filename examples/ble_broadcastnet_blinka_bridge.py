@@ -1,35 +1,10 @@
+"""This example bridges from BLE to Adafruit IO on a Raspberry Pi."""
+from secrets import secrets  # pylint: disable=no-name-in-module
 import time
+import requests
 from adafruit_ble.advertising.standard import ManufacturerDataField
 import adafruit_ble
 import adafruit_ble_broadcastnet
-from secrets import secrets
-import sys
-
-if sys.implementation.name == "cpython":
-    import requests
-else:
-    from adafruit_esp32spi import adafruit_esp32spi
-    from adafruit_esp32spi import adafruit_esp32spi_wifimanager
-
-    import board
-    import busio
-    from digitalio import DigitalInOut
-    import adafruit_dotstar
-
-    esp32_cs = DigitalInOut(board.D13)
-    esp32_ready = DigitalInOut(board.D11)
-    esp32_reset = DigitalInOut(board.D12)
-
-    spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
-    esp = adafruit_esp32spi.ESP_SPIcontrol(spi, esp32_cs, esp32_ready, esp32_reset)
-    # esp._debug = 1
-
-    status_light = adafruit_dotstar.DotStar(
-        board.APA102_SCK, board.APA102_MOSI, 1, brightness=0.2
-    )
-    requests = adafruit_esp32spi_wifimanager.ESPSPI_WiFiManager(
-        esp, secrets, status_light
-    )
 
 aio_auth_header = {"X-AIO-KEY": secrets["aio_key"]}
 aio_base_url = "https://io.adafruit.com/api/v2/" + secrets["aio_username"]
@@ -43,6 +18,10 @@ def aio_post(path, **kwargs):
 def aio_get(path, **kwargs):
     kwargs["headers"] = aio_auth_header
     return requests.get(aio_base_url + path, **kwargs)
+
+
+# Disable outer names check because we frequently collide.
+# pylint: disable=redefined-outer-name
 
 
 def create_group(name):
@@ -102,7 +81,8 @@ def convert_to_feed_data(values, attribute_name, attribute_instance):
 
 
 ble = adafruit_ble.BLERadio()
-print("This is BroadcastNet bridge:", adafruit_ble_broadcastnet.device_address)
+bridge_address = adafruit_ble_broadcastnet.device_address
+print("This is BroadcastNet bridge:", bridge_address)
 print()
 
 print("Fetching existing feeds.")
@@ -139,7 +119,6 @@ for measurement in ble.start_scan(
     # Skip if we are getting the same broadcast more than once.
     if measurement.sequence_number == sequence_numbers[sensor_address]:
         continue
-    # print(sensor_address, measurement, measurement.sequence_number, sequence_numbers[sensor_address])
     number_missed = measurement.sequence_number - sequence_numbers[sensor_address] - 1
     if number_missed < 0:
         number_missed += 256

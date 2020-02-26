@@ -23,14 +23,15 @@ Table of Contents
 .. toctree::
     :caption: Tutorials
 
-.. todo:: Add any Learn guide links here. If there are none, then simply delete this todo and leave
-    the toctree above for use later.
-
 .. toctree::
     :caption: Related Products
 
-.. todo:: Add any product links here. If there are none, then simply delete this todo and leave
-    the toctree above for use later.
+    Raspberry Pi 3B <https://www.adafruit.com/product/3055>
+    Raspberry Pi 3B+ <https://www.adafruit.com/product/3775>
+    Raspberry Pi Zero W <https://www.adafruit.com/product/3400>
+    Raspberry Pi 4B 1GB <https://www.adafruit.com/product/4295>
+    Raspberry Pi 4B 2GB <https://www.adafruit.com/product/4292>
+    Raspberry Pi 4B 4GB <https://www.adafruit.com/product/4296>
 
 .. toctree::
     :caption: Other Links
