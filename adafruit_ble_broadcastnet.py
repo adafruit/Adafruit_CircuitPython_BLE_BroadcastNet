@@ -68,7 +68,7 @@ _ADAFRUIT_COMPANY_ID = const(0x0822)
 
 
 class AdafruitSensorMeasurement(Advertisement):
-    """Broadcast a single RGB color."""
+    """A collection of sensor measurements."""
 
     # This prefix matches all
     prefix = struct.pack("<BBH", 3, _MANUFACTURING_DATA_ADT, _ADAFRUIT_COMPANY_ID)
