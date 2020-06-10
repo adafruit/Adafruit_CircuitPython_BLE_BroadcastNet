@@ -71,7 +71,9 @@ class AdafruitSensorMeasurement(Advertisement):
     """A collection of sensor measurements."""
 
     # This prefix matches all
-    prefix = struct.pack("<BBH", 3, _MANUFACTURING_DATA_ADT, _ADAFRUIT_COMPANY_ID)
+    match_prefixes = (
+        struct.pack("<BBH", 3, _MANUFACTURING_DATA_ADT, _ADAFRUIT_COMPANY_ID),
+    )
 
     manufacturer_data = LazyObjectField(
         ManufacturerData,
