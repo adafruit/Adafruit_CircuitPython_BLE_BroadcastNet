@@ -58,7 +58,9 @@ def broadcast(measurement, *, broadcast_time=0.1, extended=False):
 
 
 # This line causes issues with Sphinx, so we won't run it in the CI
-if "GITHUB_ACTION" not in os.environ and "READTHEDOCS" not in os.environ:
+if not hasattr(os, "environ") or (
+    "GITHUB_ACTION" not in os.environ and "READTHEDOCS" not in os.environ
+):
     device_address = "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(  # pylint: disable=invalid-name
         *reversed(
             list(
