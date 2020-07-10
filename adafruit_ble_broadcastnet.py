@@ -56,15 +56,17 @@ def broadcast(measurement, *, broadcast_time=0.1, extended=False):
         _ble.stop_advertising()
         _sequence_number = (_sequence_number + 1) % 256
 
+
 # This line causes issues with Sphinx, so we won't run it in the CI
 if "GITHUB_ACTION" not in os.environ and "READTHEDOCS" not in os.environ:
     device_address = "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(  # pylint: disable=invalid-name
         *reversed(
-            list(_ble._adapter.address.address_bytes)  # pylint: disable=protected-access
+            list(
+                _ble._adapter.address.address_bytes  # pylint: disable=protected-access
+            )
         )
     )
-
-"""Device address as a string."""
+    """Device address as a string."""
 
 _MANUFACTURING_DATA_ADT = const(0xFF)
 _ADAFRUIT_COMPANY_ID = const(0x0822)
