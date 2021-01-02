@@ -1,6 +1,5 @@
-"""This example merely scans for broadcastnet packets as a quick check that something is sending them."""
+"""This example merely scans for broadcastnet packets to check that something is sending them."""
 
-from adafruit_ble.advertising.standard import ManufacturerDataField
 import adafruit_ble
 import adafruit_ble_broadcastnet
 
