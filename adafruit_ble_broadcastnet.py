@@ -46,8 +46,8 @@ _sequence_number = 0  # pylint: disable=invalid-name
 
 def broadcast(measurement, *, broadcast_time=0.1, extended=False):
     """Broadcasts the given measurement for the given broadcast time. If extended is False and the
-       measurement would be too long, it will be split into multiple measurements for transmission.
-       """
+    measurement would be too long, it will be split into multiple measurements for transmission.
+    """
     global _sequence_number  # pylint: disable=global-statement,invalid-name
     for submeasurement in measurement.split(252 if extended else 31):
         submeasurement.sequence_number = _sequence_number
@@ -83,7 +83,9 @@ class AdafruitSensorMeasurement(Advertisement):
     # This prefix matches all
     match_prefixes = (
         # Matches the sequence number field header (length+ID)
-        struct.pack("<BHBH", _MANUFACTURING_DATA_ADT, _ADAFRUIT_COMPANY_ID, 0x03, 0x0003),
+        struct.pack(
+            "<BHBH", _MANUFACTURING_DATA_ADT, _ADAFRUIT_COMPANY_ID, 0x03, 0x0003
+        ),
     )
 
     manufacturer_data = LazyObjectField(
@@ -178,7 +180,7 @@ class AdafruitSensorMeasurement(Advertisement):
                 if value is not None:
                     parts.append("{}={}".format(attr, str(value)))
         return "<{} {} >".format(self.__class__.__name__, " ".join(parts))
-    
+
     def __bytes__(self):
         """The raw packet bytes."""
         # Must reorder the ManufacturerData contents so the sequence number field is always first.
@@ -188,7 +190,7 @@ class AdafruitSensorMeasurement(Advertisement):
 
     def split(self, max_packet_size=31):
         """Split the measurement into multiple measurements with the given max_packet_size. Yields
-           each submeasurement."""
+        each submeasurement."""
         current_size = 8  # baseline for mfg data and sequence number
         if current_size + len(self.manufacturer_data) < max_packet_size:
             yield self
