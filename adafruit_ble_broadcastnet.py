@@ -61,7 +61,7 @@ def broadcast(measurement, *, broadcast_time=0.1, extended=False):
 if not hasattr(os, "environ") or (
     "GITHUB_ACTION" not in os.environ and "READTHEDOCS" not in os.environ
 ):
-    if _ble._adapter.address: # pylint: disable=protected-access
+    if _ble._adapter.address:  # pylint: disable=protected-access
         device_address = "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(  # pylint: disable=invalid-name
             *reversed(
                 list(
@@ -70,7 +70,9 @@ if not hasattr(os, "environ") or (
             )
         )
     else:
-        device_address = "000000000000" # pylint: disable=invalid-name,pointless-string-statement
+        device_address = (
+            "000000000000"  # pylint: disable=invalid-name,pointless-string-statement
+        )
         """Device address as a string."""
 
 _MANUFACTURING_DATA_ADT = const(0xFF)
