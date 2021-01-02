@@ -70,9 +70,7 @@ if not hasattr(os, "environ") or (
             )
         )
     else:
-        device_address = (
-            "000000000000"  # pylint: disable=invalid-name,pointless-string-statement
-        )
+        device_address = "000000000000"  # pylint: disable=invalid-name
         """Device address as a string."""
 
 _MANUFACTURING_DATA_ADT = const(0xFF)
