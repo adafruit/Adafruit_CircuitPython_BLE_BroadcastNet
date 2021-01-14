@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
+# SPDX-License-Identifier: MIT
+
 """This is a complex sensor node that uses the sensors on a Clue and Feather Bluefruit Sense."""
 
 import time

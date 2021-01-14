@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
+# SPDX-License-Identifier: MIT
+
 """This is a basic sensor node that uses the internal temperature sensor and reports it every 10
    seconds."""
 
