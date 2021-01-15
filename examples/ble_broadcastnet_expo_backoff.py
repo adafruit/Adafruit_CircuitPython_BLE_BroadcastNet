@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
+# SPDX-License-Identifier: MIT
+
 """This example uses the internal temperature sensor and reports the battery voltage. However, it
    reads the temperature more often but only reports it when it's changed by a degree since the last
    report. When doing a report it will actually do multiple broadcasts and wait 2 ** n readings

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
+# SPDX-License-Identifier: MIT
+
 """This example bridges from BLE to Adafruit IO on a Raspberry Pi."""
 from secrets import secrets  # pylint: disable=no-name-in-module
 import time
