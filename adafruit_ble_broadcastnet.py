@@ -149,10 +149,11 @@ class AdafruitSensorMeasurement(Advertisement):
     """Battery voltage in millivolts. Saves two bytes over voltage and is more readable in bare
        packets."""
 
-    def __init__(self, *, sequence_number=None):
-        super().__init__()
-        if sequence_number:
-            self.sequence_number = sequence_number
+    def __init__(self, *, entry=None, sequence_number=None):
+        super().__init__(entry=entry)
+        if entry:
+            return
+        self.sequence_number = 0
 
     def __str__(self):
         parts = []
@@ -163,13 +164,6 @@ class AdafruitSensorMeasurement(Advertisement):
                 if value is not None:
                     parts.append("{}={}".format(attr, str(value)))
         return "<{} {} >".format(self.__class__.__name__, " ".join(parts))
-
-    def __bytes__(self):
-        """The raw packet bytes."""
-        # Must reorder the ManufacturerData contents so the sequence number field is always first.
-        # Necessary to ensure that match_prefixes works right to reconstruct on the receiver.
-        self.data_dict[255].data.move_to_end(3, last=False)
-        return super().__bytes__()
 
     def split(self, max_packet_size=31):
         """Split the measurement into multiple measurements with the given max_packet_size. Yields
