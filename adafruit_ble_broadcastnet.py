@@ -149,11 +149,11 @@ class AdafruitSensorMeasurement(Advertisement):
     """Battery voltage in millivolts. Saves two bytes over voltage and is more readable in bare
        packets."""
 
-    def __init__(self, *, entry=None, sequence_number=None):
+    def __init__(self, *, entry=None, sequence_number=0):
         super().__init__(entry=entry)
         if entry:
             return
-        self.sequence_number = 0
+        self.sequence_number = sequence_number
 
     def __str__(self):
         parts = []
