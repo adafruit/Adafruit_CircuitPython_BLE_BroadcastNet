@@ -58,6 +58,11 @@ Usage Example
 
 Add a secrets.py file and then run ``ble_broadcastnet_blinka_bridge.py``.
 
+Documentation
+=============
+
+API documentation for this library can be found on `Read the Docs <https://circuitpython.readthedocs.io/projects/ble_broadcastnet/en/latest/>`_.
+
 Contributing
 ============
 
