@@ -33,7 +33,12 @@ _ble = adafruit_ble.BLERadio()  # pylint: disable=invalid-name
 _sequence_number = 0  # pylint: disable=invalid-name
 
 
-def broadcast(measurement: 'AdafruitSensorMeasurement', *, broadcast_time: float = 0.1, extended: bool = False) -> None:
+def broadcast(
+    measurement: "AdafruitSensorMeasurement",
+    *,
+    broadcast_time: float = 0.1,
+    extended: bool = False
+) -> None:
     """Broadcasts the given measurement for the given broadcast time. If extended is False and the
     measurement would be too long, it will be split into multiple measurements for transmission,
     each with the given broadcast time.
@@ -156,7 +161,9 @@ class AdafruitSensorMeasurement(Advertisement):
     """Battery voltage in millivolts. Saves two bytes over voltage and is more readable in bare
        packets."""
 
-    def __init__(self, *, entry: Optional[ScanEntry] = None, sequence_number: int = 0) -> None:
+    def __init__(
+        self, *, entry: Optional[ScanEntry] = None, sequence_number: int = 0
+    ) -> None:
         super().__init__(entry=entry)
         if entry:
             return
@@ -172,7 +179,7 @@ class AdafruitSensorMeasurement(Advertisement):
                     parts.append("{}={}".format(attr, str(value)))
         return "<{} {} >".format(self.__class__.__name__, " ".join(parts))
 
-    def split(self, max_packet_size: int = 31) -> 'AdafruitSensorMeasurement':
+    def split(self, max_packet_size: int = 31) -> "AdafruitSensorMeasurement":
         """Split the measurement into multiple measurements with the given max_packet_size. Yields
         each submeasurement."""
         current_size = 8  # baseline for mfg data and sequence number
