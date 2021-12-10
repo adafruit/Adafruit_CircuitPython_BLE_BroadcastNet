@@ -35,7 +35,8 @@ _sequence_number = 0  # pylint: disable=invalid-name
 
 def broadcast(measurement: 'AdafruitSensorMeasurement', *, broadcast_time: float = 0.1, extended: bool = False) -> None:
     """Broadcasts the given measurement for the given broadcast time. If extended is False and the
-    measurement would be too long, it will be split into multiple measurements for transmission.
+    measurement would be too long, it will be split into multiple measurements for transmission,
+    each with the given broadcast time.
     """
     global _sequence_number  # pylint: disable=global-statement,invalid-name
     for submeasurement in measurement.split(252 if extended else 31):
