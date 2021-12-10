@@ -20,6 +20,12 @@ import adafruit_ble
 from adafruit_ble.advertising import Advertisement, LazyObjectField
 from adafruit_ble.advertising.standard import ManufacturerData, ManufacturerDataField
 
+try:
+    from typing import Optional
+    from _bleio import ScanEntry
+except ImportError:
+    pass
+
 __version__ = "0.0.0-auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_BLE_BroadcastNet.git"
 
@@ -27,7 +33,7 @@ _ble = adafruit_ble.BLERadio()  # pylint: disable=invalid-name
 _sequence_number = 0  # pylint: disable=invalid-name
 
 
-def broadcast(measurement, *, broadcast_time=0.1, extended=False):
+def broadcast(measurement: 'AdafruitSensorMeasurement', *, broadcast_time: float = 0.1, extended: bool = False) -> None:
     """Broadcasts the given measurement for the given broadcast time. If extended is False and the
     measurement would be too long, it will be split into multiple measurements for transmission.
     """
@@ -149,13 +155,13 @@ class AdafruitSensorMeasurement(Advertisement):
     """Battery voltage in millivolts. Saves two bytes over voltage and is more readable in bare
        packets."""
 
-    def __init__(self, *, entry=None, sequence_number=0):
+    def __init__(self, *, entry: Optional[ScanEntry] = None, sequence_number: int = 0) -> None:
         super().__init__(entry=entry)
         if entry:
             return
         self.sequence_number = sequence_number
 
-    def __str__(self):
+    def __str__(self) -> str:
         parts = []
         for attr in dir(self.__class__):
             attribute_instance = getattr(self.__class__, attr)
@@ -165,7 +171,7 @@ class AdafruitSensorMeasurement(Advertisement):
                     parts.append("{}={}".format(attr, str(value)))
         return "<{} {} >".format(self.__class__.__name__, " ".join(parts))
 
-    def split(self, max_packet_size=31):
+    def split(self, max_packet_size: int = 31) -> 'AdafruitSensorMeasurement':
         """Split the measurement into multiple measurements with the given max_packet_size. Yields
         each submeasurement."""
         current_size = 8  # baseline for mfg data and sequence number
