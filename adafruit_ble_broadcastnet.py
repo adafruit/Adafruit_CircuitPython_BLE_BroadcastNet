@@ -161,6 +161,9 @@ class AdafruitSensorMeasurement(Advertisement):
     """Battery voltage in millivolts. Saves two bytes over voltage and is more readable in bare
        packets."""
 
+    sound_level = ManufacturerDataField(0x0A16, "<f")
+    "Sound level as a float"
+
     def __init__(
         self, *, entry: Optional[ScanEntry] = None, sequence_number: int = 0
     ) -> None:

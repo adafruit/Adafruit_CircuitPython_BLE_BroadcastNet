@@ -13,7 +13,7 @@ while True:
     measurement = adafruit_ble_broadcastnet.AdafruitSensorMeasurement()
 
     measurement.temperature = cp.temperature
-    # add sound level
+    measurement.sound_level = cp.sound_level
     measurement.light = cp.light
     measurement.value = cp.switch
     # measurement.acceleration = cp.acceleration
