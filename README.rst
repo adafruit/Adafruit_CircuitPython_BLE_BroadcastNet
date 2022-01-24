@@ -2,7 +2,7 @@ Introduction
 ============
 
 .. image:: https://readthedocs.org/projects/adafruit-circuitpython-ble_broadcastnet/badge/?version=latest
-    :target: https://circuitpython.readthedocs.io/projects/ble_broadcastnet/en/latest/
+    :target: https://docs.circuitpython.org/projects/ble_broadcastnet/en/latest/
     :alt: Documentation Status
 
 .. image:: https://img.shields.io/discord/327254708534116352.svg
@@ -61,7 +61,7 @@ Add a secrets.py file and then run ``ble_broadcastnet_blinka_bridge.py``.
 Documentation
 =============
 
-API documentation for this library can be found on `Read the Docs <https://circuitpython.readthedocs.io/projects/ble_broadcastnet/en/latest/>`_.
+API documentation for this library can be found on `Read the Docs <https://docs.circuitpython.org/projects/ble_broadcastnet/en/latest/>`_.
 
 Contributing
 ============
