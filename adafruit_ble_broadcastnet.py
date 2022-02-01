@@ -15,7 +15,6 @@ Basic IOT over BLE advertisements.
 import struct
 import os
 import time
-from micropython import const
 import adafruit_ble
 from adafruit_ble.advertising import Advertisement, LazyObjectField
 from adafruit_ble.advertising.standard import ManufacturerData, ManufacturerDataField
