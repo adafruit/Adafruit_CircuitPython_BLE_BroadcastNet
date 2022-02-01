@@ -19,6 +19,10 @@ from micropython import const
 import adafruit_ble
 from adafruit_ble.advertising import Advertisement, LazyObjectField
 from adafruit_ble.advertising.standard import ManufacturerData, ManufacturerDataField
+from adafruit_ble.advertising.adafruit import (
+    MANUFACTURING_DATA_ADT,
+    ADAFRUIT_COMPANY_ID,
+)
 
 try:
     from typing import Optional
@@ -68,9 +72,6 @@ if not hasattr(os, "environ") or (
         device_address = "000000000000"  # pylint: disable=invalid-name
         """Device address as a string."""
 
-_MANUFACTURING_DATA_ADT = const(0xFF)
-_ADAFRUIT_COMPANY_ID = const(0x0822)
-
 
 class AdafruitSensorMeasurement(Advertisement):
     """A collection of sensor measurements."""
@@ -78,16 +79,14 @@ class AdafruitSensorMeasurement(Advertisement):
     # This prefix matches all
     match_prefixes = (
         # Matches the sequence number field header (length+ID)
-        struct.pack(
-            "<BHBH", _MANUFACTURING_DATA_ADT, _ADAFRUIT_COMPANY_ID, 0x03, 0x0003
-        ),
+        struct.pack("<BHBH", MANUFACTURING_DATA_ADT, ADAFRUIT_COMPANY_ID, 0x03, 0x0003),
     )
 
     manufacturer_data = LazyObjectField(
         ManufacturerData,
         "manufacturer_data",
-        advertising_data_type=_MANUFACTURING_DATA_ADT,
-        company_id=_ADAFRUIT_COMPANY_ID,
+        advertising_data_type=MANUFACTURING_DATA_ADT,
+        company_id=ADAFRUIT_COMPANY_ID,
         key_encoding="<H",
     )
 
