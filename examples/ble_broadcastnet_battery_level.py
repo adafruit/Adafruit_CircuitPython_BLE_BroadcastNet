@@ -16,7 +16,7 @@ while True:
     measurement = adafruit_ble_broadcastnet.AdafruitSensorMeasurement()
     battery_voltage = (
         battery.value
-        / 2 ** 16
+        / 2**16
         * divider_ratio
         * battery.reference_voltage  # pylint: disable=no-member
     )

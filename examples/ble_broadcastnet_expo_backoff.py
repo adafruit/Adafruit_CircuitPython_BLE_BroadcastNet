@@ -31,11 +31,11 @@ while True:
     # Repeatedly broadcast identical values to help ensure it is picked up by the bridge. Perform
     # exponential backoff as we get more confidence.
     exp = int(math.log(consecutive, 2))
-    if 2 ** exp == consecutive:
+    if 2**exp == consecutive:
         measurement = adafruit_ble_broadcastnet.AdafruitSensorMeasurement()
         battery_voltage = (
             battery.value
-            / 2 ** 16
+            / 2**16
             * divider_ratio
             * battery.reference_voltage  # pylint: disable=no-member
         )
