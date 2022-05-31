@@ -6,6 +6,7 @@
 
 .. automodule:: adafruit_ble_broadcastnet
    :members:
+   :exclude-members: AdafruitSensorMeasurement
 
    .. autoclass:: AdafruitSensorMeasurement
       :members:
