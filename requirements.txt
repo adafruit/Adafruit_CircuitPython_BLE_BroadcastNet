@@ -3,4 +3,4 @@
 # SPDX-License-Identifier: Unlicense
 
 Adafruit-Blinka
-adafruit-circuitpython-ble
+adafruit-circuitpython-ble>=8.0.0
