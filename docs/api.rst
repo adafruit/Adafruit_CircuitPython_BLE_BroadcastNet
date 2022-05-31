@@ -9,4 +9,5 @@
    :members:
 
    .. autoclass:: AdafruitSensorMeasurement
+      :members:
       :exclude-members: match_prefixes
