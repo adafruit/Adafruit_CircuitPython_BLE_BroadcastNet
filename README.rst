@@ -60,7 +60,7 @@ To install in a virtual environment in your current project:
 Usage Example
 =============
 
-Add a secrets.py file and then run ``ble_broadcastnet_blinka_bridge.py``.
+Add a settings.toml file and then run ``ble_broadcastnet_blinka_bridge.py``.
 
 Documentation
 =============

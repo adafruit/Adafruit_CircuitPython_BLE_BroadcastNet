@@ -2,15 +2,20 @@
 # SPDX-License-Identifier: MIT
 
 """This example bridges from BLE to Adafruit IO on a Raspberry Pi."""
-from secrets import secrets  # pylint: disable=no-name-in-module
+from os import getenv
 import time
 import requests
 from adafruit_ble.advertising.standard import ManufacturerDataField
 import adafruit_ble
 import adafruit_ble_broadcastnet
 
-aio_auth_header = {"X-AIO-KEY": secrets["aio_key"]}
-aio_base_url = "https://io.adafruit.com/api/v2/" + secrets["aio_username"]
+# Get Adafruit IO keys, ensure these are setup in your environment
+# (visit io.adafruit.com if you need to create an account, or if you need your Adafruit IO key.)
+aio_username = getenv("ADAFRUIT_AIO_USERNAME")
+aio_key = getenv("ADAFRUIT_AIO_KEY")
+
+aio_auth_header = {"X-AIO-KEY": aio_key}
+aio_base_url = f"https://io.adafruit.com/api/v2/{aio_username}"
 
 
 def aio_post(path, **kwargs):
