@@ -6,11 +6,13 @@ from os import getenv
 import time
 import requests
 from adafruit_ble.advertising.standard import ManufacturerDataField
+from adafruit_blinka import load_settings_toml
 import adafruit_ble
 import adafruit_ble_broadcastnet
 
-# Get Adafruit IO keys, ensure these are setup in your environment
+# Get Adafruit IO keys, ensure these are setup in settings.toml
 # (visit io.adafruit.com if you need to create an account, or if you need your Adafruit IO key.)
+load_settings_toml()
 aio_username = getenv("ADAFRUIT_AIO_USERNAME")
 aio_key = getenv("ADAFRUIT_AIO_KEY")
 
