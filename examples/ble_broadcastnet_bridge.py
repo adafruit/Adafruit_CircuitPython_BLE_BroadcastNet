@@ -3,14 +3,13 @@
 
 """This example bridges from BLE to Adafruit IO on a CircuitPython device that
    supports both WiFi and BLE. (The first chip is the ESP32-S3.)"""
-from secrets import secrets  # pylint: disable=no-name-in-module
-import ssl
+from os import getenv
 import time
+import adafruit_connection_manager
 import adafruit_requests as requests
 from adafruit_ble.advertising.standard import ManufacturerDataField
 import adafruit_ble
 import board
-import socketpool
 import wifi
 import adafruit_ble_broadcastnet
 
@@ -24,16 +23,24 @@ if hasattr(board, "NEOPIXEL"):
         print("No status pixel due to missing library")
         neopixel = None
 
-aio_auth_header = {"X-AIO-KEY": secrets["aio_key"]}
-aio_base_url = "https://io.adafruit.com/api/v2/" + secrets["aio_username"]
+# Get WiFi details and Adafruit IO keys, ensure these are setup in settings.toml
+# (visit io.adafruit.com if you need to create an account, or if you need your Adafruit IO key.)
+ssid = getenv("CIRCUITPY_WIFI_SSID")
+password = getenv("CIRCUITPY_WIFI_PASSWORD")
+aio_username = getenv("ADAFRUIT_AIO_USERNAME")
+aio_key = getenv("ADAFRUIT_AIO_KEY")
 
-print("Connecting to %s" % secrets["ssid"])
-wifi.radio.connect(secrets["ssid"], secrets["password"])
-print("Connected to %s!" % secrets["ssid"])
-print("My IP address is", wifi.radio.ipv4_address)
+aio_auth_header = {"X-AIO-KEY": aio_key}
+aio_base_url = f"https://io.adafruit.com/api/v2/{aio_username}"
 
-socket = socketpool.SocketPool(wifi.radio)
-https = requests.Session(socket, ssl.create_default_context())
+print(f"Connecting to {ssid}")
+wifi.radio.connect(ssid, password)
+print(f"Connected to {ssid}!")
+print(f"My IP address is {wifi.radio.ipv4_address}")
+
+pool = adafruit_connection_manager.get_radio_socketpool(wifi.radio)
+ssl_context = adafruit_connection_manager.get_radio_ssl_context(wifi.radio)
+requests = requests.Session(pool, ssl_context)
 
 status_pixel = None
 if neopixel and hasattr(board, "NEOPIXEL"):
@@ -42,12 +49,12 @@ if neopixel and hasattr(board, "NEOPIXEL"):
 
 def aio_post(path, **kwargs):
     kwargs["headers"] = aio_auth_header
-    return https.post(aio_base_url + path, **kwargs)
+    return requests.post(aio_base_url + path, **kwargs)
 
 
 def aio_get(path, **kwargs):
     kwargs["headers"] = aio_auth_header
-    return https.get(aio_base_url + path, **kwargs)
+    return requests.get(aio_base_url + path, **kwargs)
 
 
 # Disable outer names check because we frequently collide.
