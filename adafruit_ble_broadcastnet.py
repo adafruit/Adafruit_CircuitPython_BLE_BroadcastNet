@@ -12,19 +12,21 @@ Basic IOT over BLE advertisements.
 * Author(s): Scott Shawcroft
 """
 
-import struct
 import os
+import struct
 import time
+
 import adafruit_ble
 from adafruit_ble.advertising import Advertisement, LazyObjectField
-from adafruit_ble.advertising.standard import ManufacturerData, ManufacturerDataField
 from adafruit_ble.advertising.adafruit import (
-    MANUFACTURING_DATA_ADT,
     ADAFRUIT_COMPANY_ID,
+    MANUFACTURING_DATA_ADT,
 )
+from adafruit_ble.advertising.standard import ManufacturerData, ManufacturerDataField
 
 try:
     from typing import Optional
+
     from _bleio import ScanEntry
 except ImportError:
     pass
@@ -32,21 +34,18 @@ except ImportError:
 __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/adafruit/Adafruit_CircuitPython_BLE_BroadcastNet.git"
 
-_ble = adafruit_ble.BLERadio()  # pylint: disable=invalid-name
-_sequence_number = 0  # pylint: disable=invalid-name
+_ble = adafruit_ble.BLERadio()
+_sequence_number = 0
 
 
 def broadcast(
-    measurement: "AdafruitSensorMeasurement",
-    *,
-    broadcast_time: float = 0.1,
-    extended: bool = False
+    measurement: "AdafruitSensorMeasurement", *, broadcast_time: float = 0.1, extended: bool = False
 ) -> None:
     """Broadcasts the given measurement for the given broadcast time. If extended is False and the
     measurement would be too long, it will be split into multiple measurements for transmission,
     each with the given broadcast time.
     """
-    global _sequence_number  # pylint: disable=global-statement,invalid-name
+    global _sequence_number  # noqa: PLW0603
     for submeasurement in measurement.split(252 if extended else 31):
         submeasurement.sequence_number = _sequence_number
         _ble.start_advertising(submeasurement, scan_response=None)
@@ -59,16 +58,12 @@ def broadcast(
 if not hasattr(os, "environ") or (
     "GITHUB_ACTION" not in os.environ and "READTHEDOCS" not in os.environ
 ):
-    if _ble._adapter.address:  # pylint: disable=protected-access
-        device_address = "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(  # pylint: disable=invalid-name
-            *reversed(
-                list(
-                    _ble._adapter.address.address_bytes  # pylint: disable=protected-access
-                )
-            )
+    if _ble._adapter.address:
+        device_address = "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}".format(
+            *reversed(list(_ble._adapter.address.address_bytes))
         )
     else:
-        device_address = "000000000000"  # pylint: disable=invalid-name
+        device_address = "000000000000"
         """Device address as a string."""
 
 
@@ -162,9 +157,7 @@ class AdafruitSensorMeasurement(Advertisement):
     sound_level = ManufacturerDataField(0x0A16, "<f")
     "Sound level as a float"
 
-    def __init__(
-        self, *, entry: Optional[ScanEntry] = None, sequence_number: int = 0
-    ) -> None:
+    def __init__(self, *, entry: Optional[ScanEntry] = None, sequence_number: int = 0) -> None:
         super().__init__(entry=entry)
         if entry:
             return
@@ -177,7 +170,7 @@ class AdafruitSensorMeasurement(Advertisement):
             if issubclass(attribute_instance.__class__, ManufacturerDataField):
                 value = getattr(self, attr)
                 if value is not None:
-                    parts.append("{}={}".format(attr, str(value)))
+                    parts.append(f"{attr}={str(value)}")
         return "<{} {} >".format(self.__class__.__name__, " ".join(parts))
 
     def split(self, max_packet_size: int = 31) -> "AdafruitSensorMeasurement":
