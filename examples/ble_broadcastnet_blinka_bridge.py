@@ -2,12 +2,15 @@
 # SPDX-License-Identifier: MIT
 
 """This example bridges from BLE to Adafruit IO on a Raspberry Pi."""
-from os import getenv
+
 import time
+from os import getenv
+
+import adafruit_ble
 import requests
 from adafruit_ble.advertising.standard import ManufacturerDataField
 from adafruit_blinka import load_settings_toml
-import adafruit_ble
+
 import adafruit_ble_broadcastnet
 
 # Get Adafruit IO keys, ensure these are setup in settings.toml
@@ -30,10 +33,6 @@ def aio_get(path, **kwargs):
     return requests.get(aio_base_url + path, **kwargs)
 
 
-# Disable outer names check because we frequently collide.
-# pylint: disable=redefined-outer-name
-
-
 def create_group(name):
     response = aio_post("/groups", json={"name": name})
     if response.status_code != 201:
@@ -45,9 +44,7 @@ def create_group(name):
 
 
 def create_feed(group_key, name):
-    response = aio_post(
-        "/groups/{}/feeds".format(group_key), json={"feed": {"name": name}}
-    )
+    response = aio_post(f"/groups/{group_key}/feeds", json={"feed": {"name": name}})
     if response.status_code != 201:
         print(name)
         print(response.content)
@@ -57,7 +54,7 @@ def create_feed(group_key, name):
 
 
 def create_data(group_key, data):
-    response = aio_post("/groups/{}/data".format(group_key), json={"feeds": data})
+    response = aio_post(f"/groups/{group_key}/data", json={"feeds": data})
     if response.status_code == 429:
         print("Throttled!")
         return False
@@ -132,9 +129,9 @@ for measurement in ble.start_scan(
     number_missed = measurement.sequence_number - sequence_numbers[sensor_address] - 1
     if number_missed < 0:
         number_missed += 256
-    group_key = "bridge-{}-sensor-{}".format(bridge_address, sensor_address)
+    group_key = f"bridge-{bridge_address}-sensor-{sensor_address}"
     if sensor_address not in existing_feeds:
-        create_group("Bridge {} Sensor {}".format(bridge_address, sensor_address))
+        create_group(f"Bridge {bridge_address} Sensor {sensor_address}")
         create_feed(group_key, "Missed Message Count")
         existing_feeds[sensor_address] = ["missed-message-count"]
 
@@ -145,9 +142,7 @@ for measurement in ble.start_scan(
             if attribute != "sequence_number":
                 values = getattr(measurement, attribute)
                 if values is not None:
-                    data.extend(
-                        convert_to_feed_data(values, attribute, attribute_instance)
-                    )
+                    data.extend(convert_to_feed_data(values, attribute, attribute_instance))
 
     for feed_data in data:
         if feed_data["key"] not in existing_feeds[sensor_address]:
@@ -161,7 +156,7 @@ for measurement in ble.start_scan(
         sequence_numbers[sensor_address] = measurement.sequence_number
 
     duration = time.monotonic() - start_time
-    print("Done logging measurement to IO. Took {} seconds".format(duration))
+    print(f"Done logging measurement to IO. Took {duration} seconds")
     print()
 
 print("scan done")

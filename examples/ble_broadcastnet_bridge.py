@@ -2,15 +2,18 @@
 # SPDX-License-Identifier: MIT
 
 """This example bridges from BLE to Adafruit IO on a CircuitPython device that
-   supports both WiFi and BLE. (The first chip is the ESP32-S3.)"""
-from os import getenv
+supports both WiFi and BLE. (The first chip is the ESP32-S3.)"""
+
 import time
+from os import getenv
+
+import adafruit_ble
 import adafruit_connection_manager
 import adafruit_requests as requests
-from adafruit_ble.advertising.standard import ManufacturerDataField
-import adafruit_ble
 import board
 import wifi
+from adafruit_ble.advertising.standard import ManufacturerDataField
+
 import adafruit_ble_broadcastnet
 
 # To get a status neopixel flashing, install the neopixel library as well.
@@ -57,10 +60,6 @@ def aio_get(path, **kwargs):
     return requests.get(aio_base_url + path, **kwargs)
 
 
-# Disable outer names check because we frequently collide.
-# pylint: disable=redefined-outer-name
-
-
 def create_group(name):
     response = aio_post("/groups", json={"name": name})
     if response.status_code != 201:
@@ -72,9 +71,7 @@ def create_group(name):
 
 
 def create_feed(group_key, name):
-    response = aio_post(
-        "/groups/{}/feeds".format(group_key), json={"feed": {"name": name}}
-    )
+    response = aio_post(f"/groups/{group_key}/feeds", json={"feed": {"name": name}})
     if response.status_code != 201:
         print(name)
         print(response.content)
@@ -84,7 +81,7 @@ def create_feed(group_key, name):
 
 
 def create_data(group_key, data):
-    response = aio_post("/groups/{}/data".format(group_key), json={"feeds": data})
+    response = aio_post(f"/groups/{group_key}/data", json={"feeds": data})
     if response.status_code == 429:
         print("Throttled!")
         return False
@@ -162,9 +159,9 @@ for measurement in ble.start_scan(
     # Derive the status color from the sensor address.
     if status_pixel:
         status_pixel[0] = rainbowio.colorwheel(sum(reversed_address))
-    group_key = "bridge-{}-sensor-{}".format(bridge_address, sensor_address)
+    group_key = f"bridge-{bridge_address}-sensor-{sensor_address}"
     if sensor_address not in existing_feeds:
-        create_group("Bridge {} Sensor {}".format(bridge_address, sensor_address))
+        create_group(f"Bridge {bridge_address} Sensor {sensor_address}")
         create_feed(group_key, "Missed Message Count")
         existing_feeds[sensor_address] = ["missed-message-count"]
 
@@ -175,9 +172,7 @@ for measurement in ble.start_scan(
             if attribute != "sequence_number":
                 values = getattr(measurement, attribute)
                 if values is not None:
-                    data.extend(
-                        convert_to_feed_data(values, attribute, attribute_instance)
-                    )
+                    data.extend(convert_to_feed_data(values, attribute, attribute_instance))
 
     for feed_data in data:
         if feed_data["key"] not in existing_feeds[sensor_address]:
@@ -193,7 +188,7 @@ for measurement in ble.start_scan(
     duration = time.monotonic() - start_time
     if status_pixel:
         status_pixel[0] = 0x000000
-    print("Done logging measurement to IO. Took {} seconds".format(duration))
+    print(f"Done logging measurement to IO. Took {duration} seconds")
     print()
 
 print("scan done")

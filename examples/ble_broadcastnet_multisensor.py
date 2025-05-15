@@ -4,13 +4,15 @@
 """This is a complex sensor node that uses the sensors on a Clue and Feather Bluefruit Sense."""
 
 import time
-import board
+
 import adafruit_bmp280
-import adafruit_sht31d
 
 # import adafruit_apds9960.apds9960
 import adafruit_lis3mdl
 import adafruit_lsm6ds
+import adafruit_sht31d
+import board
+
 import adafruit_ble_broadcastnet
 
 print("This is BroadcastNet sensor:", adafruit_ble_broadcastnet.device_address)

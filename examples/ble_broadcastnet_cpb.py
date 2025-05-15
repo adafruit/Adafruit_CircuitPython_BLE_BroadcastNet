@@ -4,7 +4,9 @@
 """This uses the CircuitPlayground Bluefruit as a sensor node."""
 
 import time
+
 from adafruit_circuitplayground import cp
+
 import adafruit_ble_broadcastnet
 
 print("This is BroadcastNet sensor:", adafruit_ble_broadcastnet.device_address)
